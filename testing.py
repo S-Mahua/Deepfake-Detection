@@ -1,20 +1,31 @@
 import streamlit as st
 import numpy as np
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 import librosa
-from skimage.transform import resize
+from PIL import Image
 
 # Function to preprocess audio file into spectrogram
 def preprocess_audio(audio_file):
     y, sr = librosa.load(audio_file)
     D = librosa.stft(y)
     D_db = librosa.amplitude_to_db(abs(D))
-    resized_spectrogram = resize(D_db, (256, 256), anti_aliasing=True)
+    
+    # Convert spectrogram to image
+    img = Image.fromarray(D_db)
+
+    # Resize the image
+    resized_img = img.resize((256, 256))
+
+    # Convert the resized image back to array
+    resized_spectrogram = np.array(resized_img)
+
+    # Expand dimensions to make it (height, width, channels)
     resized_spectrogram = np.expand_dims(resized_spectrogram, axis=-1)
+
     return resized_spectrogram
 
 # Load the trained model
-model = load_model('/content/drive/MyDrive/audio.h5')
+model = load_model('audio.h5')
 
 # Streamlit app
 st.title('Audio Classification')
